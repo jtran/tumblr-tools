@@ -83,6 +83,11 @@ $tumblr_group    = getPost('group');
 $feed_url        = getPost('feed');
 $extra_tags      = getPost('extra_tags');
 
+// If the feed url starts with feed://, switch it to http://
+if (strpos($feed_url, 'feed://') === 0) {
+	$feed_url = 'http://' . substr($feed_url, strlen('feed://'));
+}
+
 // Blogger doesn't return all posts by default,
 // so we need to specifically ask for them all.
 if (!empty($feed_url) && strpos($feed_url, 'max-results=') === FALSE) {
