@@ -3,8 +3,7 @@
 // by Jonathan Tran
 // 6 June 2008
 //
-// 13 December 2008
-// - Updated to have more helpful error messages.
+// See GitHub for changes http://github.com/jtran/tumblr-tools/tree
 //
 // This code is free to use, modify, and distribute;
 // just give credit to its author(s).
@@ -250,7 +249,7 @@ if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST') {
 <table cellspacing="0">
 <tr>
 <td><label for="email">Tumblr Email:</label></td>
-<td><input type="text" id="email" name="email" /></td>
+<td><input type="text" id="email" name="email" value="<?php echo $tumblr_email; ?>" /></td>
 </tr>
 <tr>
 <td><label for="password">Tumblr Password:</label></td>
@@ -263,24 +262,24 @@ if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST') {
 <span class="optional">(optional)</span>
 </td>
 <td>
-<input type="text" id="group" name="group" /><br />e.g. mygroup.tumblr.com for public, or 1495028 for private</td>
+<input type="text" id="group" name="group" value="<?php echo $tumblr_group; ?>" /><br />e.g. mygroup.tumblr.com for public, or 1495028 for private</td>
 </tr>
 <tr>
 <td style="width: 125px"><label for="feed">Blogger Feed URL:</label></td>
 <td>
-<input type="text" id="feed" name="feed" style="width: 20em;" /><br />e.g. http://<em>myblog</em>.blogspot.com/feeds/posts/default<br />
+<input type="text" id="feed" name="feed" value="<?php echo $feed_url; ?>" style="width: 20em;" /><br />e.g. http://<em>myblog</em>.blogspot.com/feeds/posts/default<br />
 or http://www.blogger.com/feeds/<em>blogID</em>/posts/default<br/>
 See <a href="#feed_options">More Feed Options</a> below.<br />
 <br />
-<span style="font-size: smaller"><a href="#" onclick="document.getElementById('advanced').className=''; this.className='hidden'; document.getElementById('extra_tags').focus(); return false;">Advanced Options &dArr;</a></span>
+<span style="font-size: smaller"><a href="#" class="<?php if (!empty($extra_tags)) echo 'hidden'; ?>" onclick="document.getElementById('advanced').className=''; this.className='hidden'; document.getElementById('extra_tags').focus(); return false;">Advanced Options &dArr;</a></span>
 </td>
 </tr>
-<tr id="advanced" class="hidden">
+<tr id="advanced" class="<?php if (empty($extra_tags)) echo 'hidden'; ?>">
 <td>
 <label for="extra_tags">Extra Tags to Add to Posts:</label><br />
 <span class="optional">(optional)</span>
 </td>
-<td><input type="text" id="extra_tags" name="extra_tags" /><br />
+<td><input type="text" id="extra_tags" name="extra_tags" value="<?php echo $extra_tags; ?>" /><br />
 comma-delimited e.g. Blogger, My Old Blog, imported</td>
 </tr>
 <tr>
