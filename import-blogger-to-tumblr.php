@@ -96,7 +96,10 @@ if (!empty($feed_url) && strpos($feed_url, 'max-results=') === FALSE) {
 }
 
 // Creates a new Tumblr post
-function createTextPost($entry) {
+function createTextPost($entry, $try) {
+	// Exponential back-off, capped at 1 minute.
+	sleep(min(pow(2, $try), 60));
+	
 	// Data for new record
 	$tags = join(',', $entry['tags']);
 	$tags .= ((empty($tags)) ? '' : ',') . $GLOBALS['extra_tags'];
@@ -132,8 +135,15 @@ function createTextPost($entry) {
 		return $result;
 	} else if ($status == 403) {
 		throw new Exception('Bad email or password', $status);
+	} else if ($status >= 400 && $status < 500) {
+		throw new Exception("Error $status: $result\n", $status);
 	} else {
-		throw new Exception("Error: $result\n", $status);
+		if ($try < 20) {
+			// Tumblr failed; retry.
+			createTextPost($entry, $try + 1);
+		} else {
+			throw new Exception("Error $status: $result\n", $status);
+		}
 	}
 }
 
@@ -203,7 +213,7 @@ function import() {
 		for ($i = count($blog['entries']) - 1; $i >= 0; $i--) {
 			$entry = $blog['entries'][$i];
 			echo 'Importing: ' . dispValidate($entry['title']) . "<br />\n";
-			createTextPost($entry);
+			createTextPost($entry, 0);
 		}
 		
 		echo "<br />\nDone.  Imported $n " . (($n == 1) ? 'post' : 'posts') . ".<br />\n";
