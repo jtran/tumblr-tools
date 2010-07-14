@@ -82,6 +82,8 @@ $tumblr_password = getPost('password');
 $tumblr_group    = getPost('group');
 $feed_url        = getPost('feed');
 $extra_tags      = getPost('extra_tags');
+// Set param preview=1 to do everything except send to Tumblr.
+$preview         = '1' === (isset($_GET['preview']) ? $_GET['preview'] : getPost('preview'));
 
 // If the feed url starts with feed://, switch it to http://
 if (strpos($feed_url, 'feed://') === 0) {
@@ -120,6 +122,9 @@ function createTextPost($entry, $try) {
 	
 	// Prepare POST request
 	$request_data = http_build_query($data);
+	
+	// Bail if we are in preview mode.
+	if ($GLOBALS['preview']) return TRUE;
 	
 	// Send the POST request with cURL
 	$c = curl_init('http://www.tumblr.com/api/write');
@@ -261,6 +266,9 @@ if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST') {
 ?>
 
 <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+<?php if ($preview) { ?>
+  <input type="hidden" name="preview" value="1" />
+<?php } ?>
 <table cellspacing="0">
 <tr>
 <td><label for="email">Tumblr Email:</label></td>
