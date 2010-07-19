@@ -84,6 +84,8 @@ $feed_url        = getPost('feed');
 $extra_tags      = getPost('extra_tags');
 // Set param preview=1 to do everything except send to Tumblr.
 $preview         = '1' === (isset($_GET['preview']) ? $_GET['preview'] : getPost('preview'));
+// Set param autocorrect=0 to not try to infer the correct URL.
+$autocorrect     = '0' !== (isset($_GET['autocorrect']) ? $_GET['autocorrect'] : getPost('autocorrect'));
 
 // If the feed url starts with feed://, switch it to http://
 if (strpos($feed_url, 'feed://') === 0) {
@@ -277,6 +279,9 @@ if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST') {
 <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <?php if ($preview) { ?>
   <input type="hidden" name="preview" value="1" />
+<?php } ?>
+<?php if (!$autocorrect) { ?>
+  <input type="hidden" name="autocorrect" value="0" />
 <?php } ?>
 <table cellspacing="0">
 <tr>
