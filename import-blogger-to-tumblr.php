@@ -225,6 +225,15 @@ function import() {
 		
 	} catch (Exception $e) {
 		echo "Importing failed: " . dispValidate($e->getMessage(), FALSE) . "<br /><br />\n";
+		
+		// Send email to help diagnose errors.
+		$to = trim(file_get_contents('.email_to.txt'));
+		if (!empty($to)) {
+			$msg = "Email: " . $GLOBALS['tumblr_email'] . "\n";
+			$msg .= "Feed URL: " . $GLOBALS['feed_url'] . "\n";
+			$msg .= "\n" . $e;
+			mail($to, 'Import to Tumblr Error', $msg, 'From: tumblr-importer@jonnytran.com');
+		}
 	}
 }
 
