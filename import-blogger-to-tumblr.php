@@ -92,13 +92,6 @@ if (strpos($feed_url, 'feed://') === 0) {
 	$feed_url = 'http://' . substr($feed_url, strlen('feed://'));
 }
 
-// Blogger doesn't return all posts by default,
-// so we need to specifically ask for them all.
-if (!empty($feed_url) && strpos($feed_url, 'max-results=') === FALSE) {
-	$feed_url .= (strpos($feed_url, '?') === FALSE) ? '?' : '&';
-	$feed_url .= 'max-results=' . PHP_INT_MAX;
-}
-
 // Creates a new Tumblr post
 function createTextPost($entry, $try) {
 	// Exponential back-off, capped at 1 minute.
@@ -205,7 +198,22 @@ function import() {
 	try {
 		// Download the posts
 		echo "Downloading feed.<br />\n";
-		$xml = getUrlContents($GLOBALS['feed_url']);
+		$url = $GLOBALS['feed_url'];
+		
+		// Convert Blogger URL to Blogger Posts Feed URL.
+		if ($GLOBALS['autocorrect'] &&
+		    1 == preg_match("#^http://[^/\.]+\.blogspot\.com/$#", $url)) {
+			$url .= 'feeds/posts/default';
+		}
+		
+		// Blogger doesn't return all posts by default,
+		// so we need to specifically ask for them all.
+		if (strpos($url, 'max-results=') === FALSE) {
+			$url .= (strpos($url, '?') === FALSE) ? '?' : '&';
+			$url .= 'max-results=' . PHP_INT_MAX;
+		}
+		
+		$xml = getUrlContents($url);
 		if (empty($xml)) {
 			throw new Exception("Unable to download feed contents; check that the URL of your feed is correct and publicly accessible");
 		}
