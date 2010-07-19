@@ -147,7 +147,7 @@ function createTextPost($entry, $try) {
 	}
 }
 
-function getBlogFromAtomFeed($xml) {
+function getBlogFromAtomFeed($xml, $url) {
 	$blog = array(
 		'title' => value_in('title', $xml),
 		'entries' => array()
@@ -155,7 +155,7 @@ function getBlogFromAtomFeed($xml) {
 	
 	$entries = element_set('entry', $xml);
 	if ($entries === NULL || $entries === false) {
-		throw new Exception("XML parse error: could not find post entries; check your feed URL and make sure it is publicly accessible");
+		throw new Exception("XML parse error: could not find post entries; check your feed URL and make sure it is publicly accessible.  You should be able to see your posts here: $url");
 	}
 	
 	foreach ($entries as $entry) {
@@ -215,11 +215,11 @@ function import() {
 		
 		$xml = getUrlContents($url);
 		if (empty($xml)) {
-			throw new Exception("Unable to download feed contents; check that the URL of your feed is correct and publicly accessible");
+			throw new Exception("Unable to download feed contents; check that the URL of your feed is correct and publicly accessible.  You should be able to see your posts here: $url");
 		}
 		
 		// Parse it
-		$blog = getBlogFromAtomFeed($xml);
+		$blog = getBlogFromAtomFeed($xml, $url);
 		
 		echo 'Found: ' . dispValidate($blog['title']) . "<br />\n";
 		
