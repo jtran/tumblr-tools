@@ -71,6 +71,8 @@ function dispValidate($s, $truncate = TRUE) {
 	return htmlentities($s, ENT_QUOTES);
 }
 
+class HtmlSafeException extends Exception {}
+
 //////////////////////////////////////////////////
 // End Util
 //////////////////////////////////////////////////
@@ -180,10 +182,18 @@ function getBlogFromAtomFeed($xml, $url) {
 				array_unshift($tags, unhtmlentities($category['term']));
 			}
 		}
+		
+		// Check for summary.  Blogger only includes summary if content isn't.
+		$entry_body = unhtmlentities(value_in('content', $entry));
+		$entry_summary = value_in('summary', $entry);
+		if (empty($entry_body) && !empty($entry_summary)) {
+			throw new HtmlSafeException("It looks like your blog's feed settings are only showing summaries, and this is preventing me from seeing your full posts.  Change your <a href=\"http://www.google.com/support/blogger/bin/answer.py?hl=en&amp;answer=42662\" target=\"_blank\">blog posts feed settings</a> to \"Full\".");
+		}
+		
 		$blog['entries'][] = array(
 			'title' => unhtmlentities(value_in('title', $entry)),
 			'timestamp' => date('Y-m-d H:i:s', strtotime(value_in('published', $entry))),
-			'body' => unhtmlentities(value_in('content', $entry)),
+			'body' => $entry_body,
 			'tags' => $tags
 		);
 	}
@@ -242,6 +252,8 @@ function import() {
 		
 		echo "<br />\nDone.  Imported $n " . (($n == 1) ? 'post' : 'posts') . ".<br />\n";
 		
+	} catch (HtmlSafeException $e) {
+		echo "Importing failed: " . $e->getMessage() . "<br /><br />\n";
 	} catch (Exception $e) {
 		echo "Importing failed: " . dispValidate($e->getMessage(), FALSE) . "<br /><br />\n";
 	}
