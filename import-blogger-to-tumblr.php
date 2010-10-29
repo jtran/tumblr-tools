@@ -254,8 +254,10 @@ function import() {
 		
 	} catch (HtmlSafeException $e) {
 		echo "Importing failed: " . $e->getMessage() . "<br /><br />\n";
+		echo "Having trouble?  Your question may already be answered <a href=\"http://plpatterns.com/post/37782942/moving-from-blogger-to-tumblr#disqus_thread\" target=\"_blank\">here</a>.<br /><br />\n";
 	} catch (Exception $e) {
 		echo "Importing failed: " . dispValidate($e->getMessage(), FALSE) . "<br /><br />\n";
+		echo "Having trouble?  Your question may already be answered <a href=\"http://plpatterns.com/post/37782942/moving-from-blogger-to-tumblr#disqus_thread\" target=\"_blank\">here</a>.<br /><br />\n";
 	}
 }
 
