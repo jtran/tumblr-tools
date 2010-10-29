@@ -84,6 +84,8 @@ $feed_url        = getPost('feed');
 $extra_tags      = getPost('extra_tags');
 // Set param preview=1 to do everything except send to Tumblr.
 $preview         = '1' === (isset($_GET['preview']) ? $_GET['preview'] : getPost('preview'));
+// Set param debug=1 to display extra debug info.
+$debug           = '1' === (isset($_GET['debug']) ? $_GET['debug'] : getPost('debug'));
 // Set param autocorrect=0 to not try to infer the correct URL.
 $autocorrect     = '0' !== (isset($_GET['autocorrect']) ? $_GET['autocorrect'] : getPost('autocorrect'));
 
@@ -117,6 +119,13 @@ function createTextPost($entry, $try) {
 	
 	// Prepare POST request
 	$request_data = http_build_query($data);
+	
+	// Show extra debug info.
+	if ($GLOBALS['debug']) {
+		$str_data = print_r($data, TRUE);
+		echo dispValidate($str_data, FALSE);
+		echo "<br />\n<br />\n";
+	}
 	
 	// Bail if we are in preview mode.
 	if ($GLOBALS['preview']) return TRUE;
@@ -278,6 +287,9 @@ if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST') {
 <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <?php if ($preview) { ?>
   <input type="hidden" name="preview" value="1" />
+<?php } ?>
+<?php if ($debug) { ?>
+  <input type="hidden" name="debug" value="1" />
 <?php } ?>
 <?php if (!$autocorrect) { ?>
   <input type="hidden" name="autocorrect" value="0" />
