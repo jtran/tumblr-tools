@@ -20,7 +20,6 @@
 //
 // Thank you!  I couldn't have done it without you.
 //
-phpinfo();
 error_reporting(E_ALL|E_STRICT);
 date_default_timezone_set('America/New_York');
 
@@ -44,12 +43,12 @@ function getPost($k) {
 }
 
 function getUrlContents($url) {
-	//$c = curl_init();
-	//curl_setopt($c, CURLOPT_URL, $url);
-	//curl_setopt($c, CURLOPT_HEADER, false);
-	//curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-	$contents = file_get_contents($url);/*curl_exec($c)*/;
-	//curl_close($c);
+	$c = curl_init();
+	curl_setopt($c, CURLOPT_URL, $url);
+	curl_setopt($c, CURLOPT_HEADER, false);
+	curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+	$contents = curl_exec($c);
+	curl_close($c);
 	
 	return $contents;
 }
@@ -189,7 +188,7 @@ function getBlogFromAtomFeed($xml, $url,$feedburner = false) {
 			    
 			} else {
 				foreach ($cats as $t) {
-					array_unshift($tags,unhtmlentities($t));
+					array_unshift($tags,unhtmlentities(value_in('category', $t)));
 				}				
 			}
 		}
@@ -213,6 +212,7 @@ function getBlogFromAtomFeed($xml, $url,$feedburner = false) {
 			'tags' => $tags
 		);
 	}
+
 	return $blog;
 }
 
