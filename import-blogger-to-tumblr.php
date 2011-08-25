@@ -229,7 +229,7 @@ function import() {
 		// so we need to specifically ask for them all.
 		if (strpos($url, 'max-results=') === FALSE) {
 			$url .= (strpos($url, '?') === FALSE) ? '?' : '&';
-			$url .= 'max-results=' . PHP_INT_MAX;
+			$url .= 'max-results=' . pow(2, 30);
 		}
 		
 		$xml = getUrlContents($url);
