@@ -42,6 +42,7 @@ function value_in($element_name, $xml, $content_only = true) {
     if ($xml == false) {
         return false;
     }
+    #WTF? Why need the "(?: Pattern?"
     $found = preg_match('#<'.$element_name.'(?:\s+[^>]+)?>(.*?)'.
             '</'.$element_name.'>#s', $xml, $matches);
     if ($found != false) {

@@ -20,7 +20,6 @@
 //
 // Thank you!  I couldn't have done it without you.
 //
-
 error_reporting(E_ALL|E_STRICT);
 date_default_timezone_set('America/New_York');
 
@@ -158,13 +157,16 @@ function createTextPost($entry, $try) {
 	}
 }
 
-function getBlogFromAtomFeed($xml, $url) {
+function getBlogFromAtomFeed($xml, $url,$feedburner = false) {
 	$blog = array(
 		'title' => value_in('title', $xml),
 		'entries' => array()
 	);
-	
-	$entries = element_set('entry', $xml);
+	if ($feedburner) {
+		$entries = element_set('item', $xml);
+	} else {
+		$entries = element_set('entry', $xml);
+	}	
 	if ($entries === NULL || $entries === false) {
 		throw new Exception("XML parse error: could not find post entries; check your feed URL and make sure it is publicly accessible.  You should be able to see your posts here: $url");
 	}
@@ -172,32 +174,45 @@ function getBlogFromAtomFeed($xml, $url) {
 	foreach ($entries as $entry) {
 		$tags = array();
 		$cats = element_set('category', $entry);
+		$pubDate = "1";
 		if (!empty($cats)) {
-			foreach ($cats as $cat) {
-				$category = element_attributes('category', $cat);
+			if (!$feedburner) {
+			    foreach ($cats as $cat) {
+			      $category = element_attributes('category', $cat);
 				
-				// Blogger puts tags in reverse order, so prepend like a queue
-				// instead of pushing like a stack.  (Not that order really matters,
-				// but some people might care.)
-				array_unshift($tags, unhtmlentities($category['term']));
+				  // Blogger puts tags in reverse order, so prepend like a queue
+				  // instead of pushing like a stack.  (Not that order really matters,
+				  // but some people might care.)
+				  array_unshift($tags, unhtmlentities($category['term']));
+			    }
+			    
+			} else {
+				foreach ($cats as $t) {
+					array_unshift($tags,unhtmlentities(value_in('category', $t)));
+				}				
 			}
 		}
-		
+		if ($feedburner) {
+			$pubDate = date('Y-m-d H:i:s', strtotime(value_in('pubDate', $entry)));
+		} else {
+			$pubDate = date('Y-m-d H:i:s', strtotime(value_in('published', $entry)));
+		}
 		// Check for summary.  Blogger only includes summary if content isn't.
-		$entry_body = unhtmlentities(value_in('content', $entry));
+		$entry_body = unhtmlentities(value_in('description', $entry));
 		$entry_summary = value_in('summary', $entry);
 		if (empty($entry_body) && !empty($entry_summary)) {
 			throw new HtmlSafeException("It looks like your blog's feed settings are only showing summaries, and this is preventing me from seeing your full posts.  Change your <a href=\"http://www.google.com/support/blogger/bin/answer.py?hl=en&amp;answer=42662\" target=\"_blank\">blog posts feed settings</a> to \"Full\".");
 		}
 		
+		
 		$blog['entries'][] = array(
 			'title' => unhtmlentities(value_in('title', $entry)),
-			'timestamp' => date('Y-m-d H:i:s', strtotime(value_in('published', $entry))),
+			'timestamp' => $pubDate,
 			'body' => $entry_body,
 			'tags' => $tags
 		);
 	}
-	
+
 	return $blog;
 }
 
@@ -224,7 +239,8 @@ function import() {
 		    1 == preg_match("#^http://[^/\.]+\.blogspot\.com/$#", $url)) {
 			$url .= 'feeds/posts/default';
 		}
-		
+		//check if is feedburner
+		$feedburner = preg_match('/feedburner/s',$url) > 0;
 		// Blogger doesn't return all posts by default,
 		// so we need to specifically ask for them all.
 		if (strpos($url, 'max-results=') === FALSE) {
@@ -238,7 +254,7 @@ function import() {
 		}
 		
 		// Parse it
-		$blog = getBlogFromAtomFeed($xml, $url);
+		$blog = getBlogFromAtomFeed($xml, $url,$feedburner);
 		
 		echo 'Found: ' . dispValidate($blog['title']) . "<br />\n";
 		
